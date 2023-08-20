@@ -13,6 +13,7 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF000000),
       appBar: AppBar(
         backgroundColor: const Color(0xFF000000),
         title: Row(
@@ -36,8 +37,36 @@ class _HomeState extends State<Home> {
           ],
         ),
       ),
-      body: const Center(
-        child: Text('Home'),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              "Se connecter",
+              style: TextStyle(
+                fontSize: 30,
+                color: Colors.white,
+                fontFamily: 'Rust',
+              ),
+            ),
+            Image.asset(
+              'assets/images/logo_1024.png',
+              height: 200,
+            ),
+            TextButton(
+                onPressed: () {
+                  print("Connexion avec Steam");
+                },
+                child: Container(
+                  color: Colors.blue,
+                  padding: const EdgeInsets.all(15.0),
+                  child: const Text(
+                    "Se connecter avec Steam",
+                    style: TextStyle(color: Colors.white, fontSize: 20),
+                  ),
+                )),
+          ],
+        ),
       ),
     );
   }
