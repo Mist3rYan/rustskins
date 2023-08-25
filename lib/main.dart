@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:rustskins/screens/home.dart';
+import 'package:rustskins/screens/login.dart';
 import 'config/config.dart';
-
-import 'screens/home.dart';
 
 Future main() async {
   await Future.delayed(const Duration(seconds: 2));
@@ -21,7 +21,11 @@ class MainApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: Config.colors.primaryColor,
       ),
-      home: const Home(),
+      initialRoute: '/',
+      routes: {
+        Login.pageName: (context) => const Login(),
+        Home.pageName: (context) => const Home(),
+      },
     );
   }
 }

@@ -1,5 +1,5 @@
 name: rustskins
-description: A new Flutter project.
+description: Gestion des skins du jeu Rust de Facepunch.
 publish_to: 'none'
 version: 0.1.0
 
@@ -12,7 +12,8 @@ dependencies:
   cupertino_icons: ^1.0.5
   flutter_native_splash: ^2.3.2
   font_awesome_flutter: ^10.5.0
-  steam_login: ^1.1.0
+  http: ^1.1.0
+  flutter_webview_plugin: ^0.4.0
 
 dev_dependencies:
   flutter_test:
