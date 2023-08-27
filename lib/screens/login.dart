@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'package:rustskins/screens/home.dart';
-import 'package:rustskins/steam/steam_login.dart';
+import 'package:rustskins/services/steam_login.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
