@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:rustskins/models/item.dart';
 import 'package:rustskins/screens/home.dart';
+import 'package:rustskins/screens/item_list_screen.dart';
+import 'package:rustskins/screens/item_screen.dart';
 import 'package:rustskins/screens/login.dart';
 import 'config/config.dart';
 
 Future main() async {
-  await Future.delayed(const Duration(seconds: 2));
+  await Future.delayed(const Duration(seconds: 1));
   FlutterNativeSplash.remove();
 
   runApp(const MainApp());
@@ -21,10 +24,14 @@ class MainApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: Config.colors.primaryColor,
       ),
-      initialRoute: '/',
+      initialRoute: '/login',
       routes: {
         Login.pageName: (context) => const Login(),
         Home.pageName: (context) => const Home(),
+        ItemScreen.pageName: (context) => ItemScreen(
+              item: Item('name', 'image', 'price', 'steamId', 'description'),
+            ),
+        ItemListScreen.pageName: (context) => const ItemListScreen(),
       },
     );
   }

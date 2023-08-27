@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'package:rustskins/screens/home.dart';
 import 'package:rustskins/services/steam_login.dart';
+import 'package:rustskins/widgets/app_bar_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
-  static const pageName = '/';
+  static const pageName = '/login';
 
   @override
   LoginState createState() => LoginState();
@@ -13,34 +15,24 @@ class Login extends StatefulWidget {
 
 class LoginState extends State<Login> {
   String steamId = '';
+// Obtain shared preferences.
+  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+
+  Future<bool> saveData() async {
+    final SharedPreferences prefs = await _prefs;
+    return prefs.setString('steamId', steamId);
+  }
+
+  Future<String> loadData() async {
+    final SharedPreferences prefs = await _prefs;
+    return prefs.getString('steamId') ?? '';
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF000000),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF000000),
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              'assets/images/logo_simple.png',
-              fit: BoxFit.contain,
-              height: 32,
-            ),
-            Container(
-              padding: const EdgeInsets.all(8.0),
-              child: const Text(
-                'Rustskins',
-                style: TextStyle(
-                  color: Color(0xFFbf8700),
-                  fontFamily: 'Rust',
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      appBar: AppBarWidget(),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -51,16 +43,25 @@ class LoginState extends State<Login> {
             ),
             GestureDetector(
               onTap: () async {
-                // Navigate to the login page.
-                final result = await Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => SteamLogin()));
-                setState(() {
-                  steamId = result;
-                  if (steamId != '') {
-                    Navigator.pushNamed(context, Home.pageName,
-                        arguments: steamId);
-                  }
-                });
+                steamId = await loadData();
+                if (steamId != '') {
+                  // ignore: use_build_context_synchronously
+                  Navigator.pushNamed(context, Home.pageName,
+                      arguments: steamId);
+                } else {
+                  // Navigate to the login page.
+                  // ignore: use_build_context_synchronously
+                  final result = await Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => SteamLogin()));
+                  setState(() {
+                    steamId = result;
+                    saveData();
+                    if (steamId != '') {
+                      Navigator.pushNamed(context, Home.pageName,
+                          arguments: steamId);
+                    }
+                  });
+                }
               },
               child: Container(
                 margin: const EdgeInsets.only(top: 75.0),

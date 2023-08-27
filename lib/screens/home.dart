@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:rustskins/screens/item_list_screen.dart';
+import 'package:rustskins/screens/item_screen.dart';
 import 'dart:convert'; // Pour décoder le JSON
 import 'package:rustskins/services/steam_login.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:rustskins/widgets/app_bar_widget.dart';
 //Navigator.pushNamed(context, Home.pageName,arguments: openId),
 //8EBAEF7DA5E71DA6D942BA6E26D26A00
 //https://steamcommunity.com/profiles/76561197994719101/inventory/#252490
@@ -26,6 +29,7 @@ class _HomeState extends State<Home> {
   //var playerId = "76561199253595436"; //spycom
   var playerId = "76561197994719101"; //pasyan
 
+  List<String> itemsId = [];
   Map<String, dynamic> jsonData = {};
   int totalInventoryCount = 0;
 
@@ -37,12 +41,9 @@ class _HomeState extends State<Home> {
 
   Future<void> fetchData() async {
     summaries = await getPlayerSummaries(playerId, apikey);
-    print('Summaries:');
-    print(summaries!['avatarfull']);
+
     final response = await http.get(Uri.parse(
         'https://steamcommunity.com/inventory/76561197994719101/252490/2'));
-    print('Reponse:');
-    print(response.statusCode);
     if (response.statusCode == 200) {
       final decodedData = json.decode(response.body);
       final totalInventory =
@@ -71,31 +72,10 @@ class _HomeState extends State<Home> {
           ) // Peut afficher un indicateur de chargement tant que les données ne sont pas prêtes
         : Scaffold(
             backgroundColor: const Color(0xFF000000),
-            appBar: AppBar(
-              backgroundColor: const Color(0xFF000000),
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    'assets/images/logo_simple.png',
-                    fit: BoxFit.contain,
-                    height: 32,
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(8.0),
-                    child: const Text(
-                      'Rustskins',
-                      style: TextStyle(
-                        color: Color(0xFFbf8700),
-                        fontFamily: 'Rust',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            appBar: AppBarWidget(),
             body: Center(
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   CachedNetworkImage(
                     imageUrl: summaries!['avatarfull'],
@@ -106,35 +86,54 @@ class _HomeState extends State<Home> {
                     errorWidget: (context, url, error) =>
                         const Icon(Icons.error),
                   ),
-                  const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Bonjour ",
-                          style: TextStyle(
-                            fontSize: 30,
-                            color: Colors.white,
-                            fontFamily: 'Rust',
-                          ),
+                  Column(
+                    children: [
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              "Bonjour ",
+                              style: TextStyle(
+                                fontSize: 30,
+                                color: Colors.white,
+                                fontFamily: 'Rust',
+                              ),
+                            ),
+                            Text(
+                              summaries!['personaname'],
+                              style: const TextStyle(
+                                fontSize: 30,
+                                color: Colors.white,
+                                fontFamily: 'Rust',
+                              ),
+                            ),
+                          ]),
+                      Text(
+                        "Votre inventaire contient $totalInventoryCount items.",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
                         ),
-/*                     Text(
-                      summaries!['personaname'],
-                      style: const TextStyle(
-                        fontSize: 30,
-                        color: Colors.white,
-                        fontFamily: 'Rust',
                       ),
-                    ), */
-                      ]),
-                  Text(
-                    "Votre inventaire contient $totalInventoryCount items.",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
+                    ],
+                  ),
+                  Container(
+                    color: const Color(0xFFbf8700),
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, ItemListScreen.pageName,
+                            arguments: itemsId);
+                      },
+                      child: const Text(
+                        "Voir mes items",
+                        style: TextStyle(
+                          fontSize: 30,
+                          color: Colors.white,
+                          fontFamily: 'Rust',
+                        ),
+                      ),
                     ),
                   ),
-/*                   Text(summaries!.toString(),
-                      style: const TextStyle(color: Colors.white)), */
                 ],
               ),
             ),
