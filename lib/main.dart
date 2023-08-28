@@ -6,6 +6,7 @@ import 'package:rustskins/screens/item_list_screen.dart';
 import 'package:rustskins/screens/item_screen.dart';
 import 'package:rustskins/screens/login.dart';
 import 'config/config.dart';
+import 'screens/test.dart';
 
 Future main() async {
   await Future.delayed(const Duration(seconds: 1));
@@ -24,7 +25,7 @@ class MainApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: Config.colors.primaryColor,
       ),
-      initialRoute: '/login',
+      initialRoute: '/home',
       routes: {
         Login.pageName: (context) => const Login(),
         Home.pageName: (context) => const Home(),
@@ -32,6 +33,7 @@ class MainApp extends StatelessWidget {
               item: Item('name', 'image', 'price', 'steamId', 'description'),
             ),
         ItemListScreen.pageName: (context) => const ItemListScreen(),
+        Test.pageName: (context) => const Test(),
       },
     );
   }

@@ -11,6 +11,10 @@ class ItemListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Map<String, dynamic> args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final List<String> marketNames = args['marketNames'] as List<String>;
+    final List<String> imageUrls = args['imageUrls'] as List<String>;
     return Scaffold(
         appBar: AppBarWidget(),
         body: Column(
@@ -35,25 +39,18 @@ class ItemListScreen extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: ListView(
-                children: [
-                  ItemListWidget(
+              child: ListView.builder(
+                itemCount: marketNames.length,
+                itemBuilder: (context, index) {
+                  return ItemListWidget(
                     item: Item(
-                        'name',
-                        'https://rustlabs.com/img/skins/324/14187.png',
+                        marketNames[index],
+                        'https://community.akamai.steamstatic.com/economy/image/${imageUrls[index]}',
                         'price',
                         'steamId',
                         'description'),
-                  ),
-                  ItemListWidget(
-                    item: Item(
-                        'name',
-                        'https://rustlabs.com/img/skins/324/14187.png',
-                        'price',
-                        'steamId',
-                        'description'),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
           ],

@@ -16,25 +16,23 @@ class ItemListWidget extends StatelessWidget {
           children: [
             CachedNetworkImage(
               imageUrl: item.image,
-              placeholder: (context, url) => const Center(
-                child: CircularProgressIndicator(
-                  color: Color(0xFFbf8700),
-                ),
+              placeholder: (context, url) => const CircularProgressIndicator(
+                color: Color(0xFFbf8700),
               ),
               errorWidget: (context, url, error) => const Icon(Icons.error),
-              width: 50,
-              height: 50,
+              width: 40,
+              height: 40,
               fit: BoxFit.cover,
             ),
             Text(
               item.name,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
             ),
             Text(
               "${item.price} €",
               style: const TextStyle(
                   color: Colors.blue,
-                  fontSize: 20,
+                  fontSize: 17,
                   fontWeight: FontWeight.bold),
             ),
           ],
