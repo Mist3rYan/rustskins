@@ -3,14 +3,20 @@
 //https://steamcommunity.com/inventory/76561197994719101/252490/2  Page de l'inventaire
 //https://steamcommunity.com/market/listings/252490/*****  Page de l'item sur le store "market_name" pour acceder à la page
 // https://community.akamai.steamstatic.com/economy/image/*****  Pour les images "icon_url" ou "icon_url_large" pour les images
+//  var playerId = "76561197994719101"; pasyan
+
+import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:rustskins/screens/item_list_screen.dart';
-import 'package:rustskins/widgets/app_bar_widget.dart';
+import 'package:rustskins/config/config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../services/steam_login.dart';
+import '../widgets/app_bar_widget.dart';
+import 'item_list_screen.dart';
+import 'login.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -21,87 +27,170 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  // //ICI LES VARIABLES ET METHODES
-  Future<Map<String, dynamic>>? _dataFuture; // Utiliser un Future nullable
-  //Map<String, dynamic>? summaries;
-  var apikey = '8EBAEF7DA5E71DA6D942BA6E26D26A00';
-  //pasyan
-  var playerId = "76561197994719101";
-  //spycom
-  //var playerId = "76561199253595436";
+  final apikey = Config.apiKey;
+  Map<String, dynamic>? summaries;
+  Map<String, dynamic> jsonData = {};
+  int totalInventoryCount = 0;
+  String pseudo = '';
+  String iconeUrl = '';
+  String steamId = '';
+  List<String> marketNames = [];
+  List<String> imageUrls = [];
+  //ICI LE STATE
+  Future<void> saveData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('iconeUrl', iconeUrl);
+    await prefs.setString('pseudo', pseudo);
+    await prefs.setString('steamId', steamId);
+  }
+
+  Future<void> loadData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    iconeUrl = prefs.getString('iconeUrl') ?? '';
+    pseudo = prefs.getString('pseudo') ?? '';
+    steamId = prefs.getString('steamId') ?? '';
+  }
 
   @override
   void initState() {
     super.initState();
-    _dataFuture = fetchData(); // Initialiser le Future dans initState
+    fetchData();
   }
 
-  Future<Map<String, dynamic>> fetchData() async {
-    //summaries = await getPlayerSummaries(playerId, apikey);
-    final response = await http.get(
-        Uri.parse('https://steamcommunity.com/inventory/$playerId/252490/2'));
-    if (response.statusCode == 200) {
-      return json.decode(response.body);
-    } else {
-      throw Exception('Votre inventaire doit être public');
+  Future<void> fetchData() async {
+    await loadData();
+    if (steamId.isEmpty) {
+      _redirectToLoginPage();
+      return;
     }
+    if (pseudo.isEmpty) {
+      summaries = await getPlayerSummaries(steamId, apikey);
+      setState(() {
+        pseudo = summaries!['personaname'];
+        iconeUrl = summaries!['avatarfull'];
+      });
+      saveData();
+    }
+
+    try {
+      final response = await http.get(
+          Uri.parse('https://steamcommunity.com/inventory/$steamId/252490/2'));
+      if (response.statusCode == 200) {
+        final decodedData = json.decode(response.body);
+        final totalInventory = decodedData[
+            'total_inventory_count']; // Récupérer la valeur de la clé
+        setState(() {
+          jsonData = decodedData;
+          totalInventoryCount = totalInventory;
+        });
+      } else {
+        _handleErrorResponse(response.statusCode);
+      }
+    } catch (error) {
+      _handleError(error);
+    }
+  }
+
+  void _redirectToLoginPage() {
+    Navigator.pushNamed(context, Login.pageName);
+  }
+
+  void _handleErrorResponse(int statusCode) {
+    String errorMessage;
+    switch (statusCode) {
+      case 400:
+        errorMessage =
+            'Veuillez vérifier que tous les paramètres sont corrects';
+        break;
+      case 401:
+        errorMessage = 'Accès refusé, veuillez réessayer plus tard';
+        break;
+      case 403:
+        errorMessage = 'Votre inventaire doit être public';
+        break;
+      case 404:
+        errorMessage = 'Page introuvable, veuillez réessayer plus tard';
+        break;
+      case 429:
+        errorMessage = 'Trop de requêtes, veuillez réessayer plus tard';
+        break;
+      case 503:
+        errorMessage = 'Service indisponible, veuillez réessayer plus tard';
+        break;
+      default:
+        errorMessage = 'Erreur inconnue, veuillez réessayer plus tard';
+    }
+    _showErrorDialog(errorMessage);
+  }
+
+  void _handleError(dynamic error) {
+    _showErrorDialog(
+        'Une erreur s\'est produite. Veuillez réessayer plus tard.');
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Erreur'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF000000),
-      appBar: AppBarWidget(),
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: _dataFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Erreur: ${snapshot.error}'));
-          } else if (snapshot.hasData) {
-            final jsonData = snapshot.data!;
-            final totalInventoryCount = jsonData['total_inventory_count'];
-
-            List<dynamic> assets = jsonData["assets"];
-            List<dynamic> descriptions = jsonData["descriptions"];
-            List<String> classids = [];
-            List<String> assetids = [];
-            List<String> marketNames = [];
-            List<String> imageUrls = [];
-
-            for (var asset in assets) {
-              String classid = asset["classid"];
-              String assetId = asset["assetid"];
-              classids.add(classid);
-              assetids.add(assetId);
-            }
-            for (var description in descriptions) {
-              String marketName = description["market_name"];
-              String imageUrl = description["icon_url"];
-              marketNames.add(marketName);
-              imageUrls.add(imageUrl);
-            }
-
-            return Center(
+    if (jsonData["descriptions"] != null) {
+      List<dynamic> descriptions = jsonData["descriptions"];
+      for (var description in descriptions) {
+        String marketName = description["market_name"];
+        String imageUrl = description["icon_url"];
+        marketNames.add(marketName);
+        imageUrls.add(imageUrl);
+      }
+    }
+    return pseudo.isEmpty
+        ? const Center(
+            child: SizedBox(
+              height: 50.0,
+              width: 50.0,
+              child: CircularProgressIndicator(
+                color: Color(0xFFbf8700),
+              ),
+            ),
+          ) // Peut afficher un indicateur de chargement tant que les données ne sont pas prêtes
+        : Scaffold(
+            backgroundColor: const Color(0xFF000000),
+            appBar: AppBarWidget(context),
+            body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  // CachedNetworkImage(
-                  //   imageUrl: summaries!['avatarfull'],
-                  //   placeholder: (context, url) =>
-                  //       const CircularProgressIndicator(
-                  //     color: Color(0xFFbf8700),
-                  //   ),
-                  //   errorWidget: (context, url, error) =>
-                  //       const Icon(Icons.error),
-                  // ),
+                  CachedNetworkImage(
+                    imageUrl: iconeUrl,
+                    placeholder: (context, url) =>
+                        const CircularProgressIndicator(
+                      color: Color(0xFFbf8700),
+                    ),
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.error),
+                  ),
                   Column(
                     children: [
-                      const Row(
+                      Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(
+                            const Text(
                               "Bonjour ",
                               style: TextStyle(
                                 fontSize: 30,
@@ -109,14 +198,14 @@ class _HomeState extends State<Home> {
                                 fontFamily: 'Rust',
                               ),
                             ),
-                            // Text(
-                            //   summaries!['personaname'],
-                            //   style: const TextStyle(
-                            //     fontSize: 30,
-                            //     color: Colors.white,
-                            //     fontFamily: 'Rust',
-                            //   ),
-                            // ),
+                            Text(
+                              pseudo,
+                              style: const TextStyle(
+                                fontSize: 30,
+                                color: Colors.white,
+                                fontFamily: 'Rust',
+                              ),
+                            ),
                           ]),
                       Text(
                         "Votre inventaire contient $totalInventoryCount items.",
@@ -125,6 +214,10 @@ class _HomeState extends State<Home> {
                           fontSize: 20,
                         ),
                       ),
+                    ],
+                  ),
+                  Column(
+                    children: [
                       Container(
                         color: const Color(0xFFbf8700),
                         child: TextButton(
@@ -149,15 +242,10 @@ class _HomeState extends State<Home> {
                         ),
                       ),
                     ],
-                  ),
+                  )
                 ],
               ),
-            );
-          } else {
-            return const Center(child: Text('Aucune donnée disponible.'));
-          }
-        },
-      ),
-    );
+            ),
+          );
   }
 }

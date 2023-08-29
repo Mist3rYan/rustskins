@@ -11,7 +11,7 @@ class ItemScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBarWidget(),
+      appBar: AppBarWidget(context),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

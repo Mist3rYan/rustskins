@@ -32,7 +32,7 @@ class LoginState extends State<Login> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF000000),
-      appBar: AppBarWidget(),
+      appBar: AppBarWidget(context),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -43,25 +43,18 @@ class LoginState extends State<Login> {
             ),
             GestureDetector(
               onTap: () async {
-                steamId = await loadData();
-                if (steamId != '') {
-                  // ignore: use_build_context_synchronously
-                  Navigator.pushNamed(context, Home.pageName,
-                      arguments: steamId);
-                } else {
-                  // Navigate to the login page.
-                  // ignore: use_build_context_synchronously
-                  final result = await Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => SteamLogin()));
-                  setState(() {
-                    steamId = result;
-                    saveData();
-                    if (steamId != '') {
-                      Navigator.pushNamed(context, Home.pageName,
-                          arguments: steamId);
-                    }
-                  });
-                }
+                // Navigate to the login page.
+                // ignore: use_build_context_synchronously
+                final result = await Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => SteamLogin()));
+                setState(() {
+                  steamId = result;
+                  saveData();
+                  if (steamId != '') {
+                    Navigator.pushNamed(context, Home.pageName,
+                        arguments: steamId);
+                  }
+                });
               },
               child: Container(
                 margin: const EdgeInsets.only(top: 75.0),

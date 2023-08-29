@@ -16,7 +16,7 @@ class ItemListScreen extends StatelessWidget {
     final List<String> marketNames = args['marketNames'] as List<String>;
     final List<String> imageUrls = args['imageUrls'] as List<String>;
     return Scaffold(
-        appBar: AppBarWidget(),
+        appBar: AppBarWidget(context),
         body: Column(
           children: [
             Container(
