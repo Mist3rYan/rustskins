@@ -4,19 +4,21 @@
 //https://steamcommunity.com/market/listings/252490/*****  Page de l'item sur le store "market_name" pour acceder à la page
 // https://community.akamai.steamstatic.com/economy/image/*****  Pour les images "icon_url" ou "icon_url_large" pour les images
 //  var playerId = "76561197994719101"; pasyan
+//https://steamcommunity.com/market/priceoverview/?appid=252490&currency=3&market_hash_name=Caution%20Crate
+//'https://steamcommunity.com/market/priceoverview/?appid=252490&currency=3&market_hash_name=${marketNames[index]}',
 
 import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:rustskins/config/config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/steam_login.dart';
 import '../widgets/app_bar_widget.dart';
 import 'item_list_screen.dart';
 import 'login.dart';
+import '../configs/config.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -27,7 +29,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  final apikey = Config.apiKey;
+  final apikey = ConfigApp.apiKey;
   Map<String, dynamic>? summaries;
   Map<String, dynamic> jsonData = {};
   int totalInventoryCount = 0;
@@ -36,7 +38,7 @@ class _HomeState extends State<Home> {
   String steamId = '';
   List<String> marketNames = [];
   List<String> imageUrls = [];
-  //ICI LE STATE
+
   Future<void> saveData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('iconeUrl', iconeUrl);
@@ -51,9 +53,34 @@ class _HomeState extends State<Home> {
     steamId = prefs.getString('steamId') ?? '';
   }
 
+  Future<void> resetJsonData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove('jsonData');
+    setState(() {
+      jsonData = {};
+    });
+    await fetchData();
+  }
+
+  Future<void> setJsonData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('jsonData', jsonEncode(jsonData));
+  }
+
+  Future<void> getJsonData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String cachedJsonData = prefs.getString('jsonData') ?? '';
+    if (cachedJsonData.isNotEmpty) {
+      setState(() {
+        jsonData = jsonDecode(cachedJsonData);
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    getJsonData();
     fetchData();
   }
 
@@ -71,23 +98,31 @@ class _HomeState extends State<Home> {
       });
       saveData();
     }
-
-    try {
-      final response = await http.get(
-          Uri.parse('https://steamcommunity.com/inventory/$steamId/252490/2'));
-      if (response.statusCode == 200) {
-        final decodedData = json.decode(response.body);
-        final totalInventory = decodedData[
-            'total_inventory_count']; // Récupérer la valeur de la clé
-        setState(() {
-          jsonData = decodedData;
-          totalInventoryCount = totalInventory;
-        });
-      } else {
-        _handleErrorResponse(response.statusCode);
+    if (jsonData.isEmpty) {
+      try {
+        final response = await http.get(Uri.parse(
+            'https://steamcommunity.com/inventory/$steamId/252490/2?l=french&count=5000'));
+        if (response.statusCode == 200) {
+          final decodedData = json.decode(response.body);
+          final totalInventory = decodedData['total_inventory_count'];
+          setState(() {
+            jsonData = decodedData;
+            totalInventoryCount = totalInventory;
+            setJsonData();
+          });
+        } else {
+          _handleErrorResponse(response.statusCode);
+        }
+      } catch (error) {
+        _handleError(error);
       }
-    } catch (error) {
-      _handleError(error);
+    } else {
+      final totalInventory =
+          jsonData['total_inventory_count']; // Récupérer la valeur de la clé
+      setState(() {
+        jsonData = jsonData;
+        totalInventoryCount = totalInventory;
+      });
     }
   }
 
@@ -138,7 +173,7 @@ class _HomeState extends State<Home> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pushNamed(context, Login.pageName);
               },
               child: const Text('OK'),
             ),
@@ -219,24 +254,43 @@ class _HomeState extends State<Home> {
                   Column(
                     children: [
                       Container(
-                        color: const Color(0xFFbf8700),
+                        color: ConfigApp.colors.accentColor,
                         child: TextButton(
                           onPressed: () {
-                            Navigator.pushNamed(
-                              context,
-                              ItemListScreen.pageName,
-                              arguments: {
-                                'marketNames': marketNames,
-                                'imageUrls': imageUrls,
-                              },
-                            );
+                            resetJsonData();
                           },
                           child: const Text(
-                            "Voir mes items",
+                            "Actualiser",
                             style: TextStyle(
                               fontSize: 30,
                               color: Colors.white,
                               fontFamily: 'Rust',
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Container(
+                          color: const Color(0xFFbf8700),
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.pushNamed(
+                                context,
+                                ItemListScreen.pageName,
+                                arguments: {
+                                  'marketNames': marketNames,
+                                  'imageUrls': imageUrls,
+                                },
+                              );
+                            },
+                            child: const Text(
+                              "Voir mes items",
+                              style: TextStyle(
+                                fontSize: 30,
+                                color: Colors.white,
+                                fontFamily: 'Rust',
+                              ),
                             ),
                           ),
                         ),

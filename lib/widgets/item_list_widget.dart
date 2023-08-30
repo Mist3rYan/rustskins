@@ -29,7 +29,7 @@ class ItemListWidget extends StatelessWidget {
               style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
             ),
             Text(
-              "${item.price} €",
+              "${item.price} ",
               style: const TextStyle(
                   color: Colors.blue,
                   fontSize: 17,

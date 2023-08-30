@@ -5,7 +5,7 @@ import 'package:rustskins/screens/home.dart';
 import 'package:rustskins/screens/item_list_screen.dart';
 import 'package:rustskins/screens/item_screen.dart';
 import 'package:rustskins/screens/login.dart';
-import 'config/config.dart';
+import 'configs/config.dart';
 import 'screens/test.dart';
 
 Future main() async {
@@ -23,9 +23,9 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primaryColor: Config.colors.primaryColor,
+        primaryColor: ConfigApp.colors.primaryColor,
       ),
-      initialRoute: '/home',
+      initialRoute: '/login',
       routes: {
         Login.pageName: (context) => const Login(),
         Home.pageName: (context) => const Home(),
