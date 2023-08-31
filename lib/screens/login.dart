@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'package:rustskins/screens/home.dart';
-import 'package:rustskins/screens/test.dart';
 import 'package:rustskins/services/steam_login.dart';
 import 'package:rustskins/widgets/app_bar_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -54,7 +53,7 @@ class LoginState extends State<Login> {
                   if (steamId != '') {
                     // Navigator.pushNamed(context, Home.pageName,
                     //     arguments: steamId);
-                    Navigator.pushNamed(context, Test.pageName,
+                    Navigator.pushNamed(context, Home.pageName,
                         arguments: steamId);
                   }
                 });

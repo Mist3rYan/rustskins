@@ -14,7 +14,8 @@ class ItemListScreen extends StatelessWidget {
     final Map<String, dynamic> args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     final List<String> marketNames = args['marketNames'] as List<String>;
-    final List<String> imageUrls = args['imageUrls'] as List<String>;
+    final List<String> marketIconeUrls =
+        args['marketIconeUrls'] as List<String>;
     return Scaffold(
         appBar: AppBarWidget(context),
         body: Column(
@@ -45,7 +46,7 @@ class ItemListScreen extends StatelessWidget {
                   return ItemListWidget(
                     item: Item(
                         marketNames[index],
-                        'https://community.akamai.steamstatic.com/economy/image/${imageUrls[index]}',
+                        'https://community.akamai.steamstatic.com/economy/image/${marketIconeUrls[index]}',
                         'price',
                         'steamId',
                         'description'),
