@@ -79,6 +79,7 @@ class _HomeState extends State<Home> {
     });
     await fetchData(); // Assurez-vous que "fetchData" est défini au préalable.
     await Future.delayed(const Duration(seconds: 2));
+    // ignore: use_build_context_synchronously
     Navigator.pop(context);
   }
 
