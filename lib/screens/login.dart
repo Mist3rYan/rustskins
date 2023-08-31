@@ -15,17 +15,29 @@ class Login extends StatefulWidget {
 
 class LoginState extends State<Login> {
   String steamId = '';
-// Obtain shared preferences.
-  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-
-  Future<bool> saveData() async {
-    final SharedPreferences prefs = await _prefs;
-    return prefs.setString('steamId', steamId);
+  Future<void> saveData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('steamId', steamId);
   }
 
-  Future<String> loadData() async {
-    final SharedPreferences prefs = await _prefs;
-    return prefs.getString('steamId') ?? '';
+  Future<void> loadData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    steamId = prefs.getString('steamId') ?? '';
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    checkAndNavigate();
+  }
+
+  Future<void> checkAndNavigate() async {
+    await loadData(); // Charger les données
+    if (steamId.isNotEmpty) {
+      Future.delayed(Duration.zero, () {
+        Navigator.pushNamed(context, Home.pageName, arguments: steamId);
+      });
+    }
   }
 
   @override
